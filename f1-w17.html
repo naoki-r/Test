@@ -1,0 +1,550 @@
+<title>W17 #12 スタジオ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Barlow+Condensed:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: full-bleed studio turntable; data plates pinned to corners like a garage telemetry wall. Single dark look by design. */
+  :root {
+    --studio: #0b0d10;
+    --panel: rgba(16, 19, 24, 0.82);
+    --line: rgba(190, 200, 210, 0.16);
+    --ink: #e9ecef;
+    --dim: #8e979f;
+    --teal: #00a19c;
+    --silver: #c9ccd1;
+    --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+    --font-head: "Barlow Condensed", "Zen Kaku Gothic New", sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { background: var(--studio); color: var(--ink); font-family: var(--font-ui); overflow: hidden; }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; touch-action: none; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  header.panel {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    padding: 12px 16px 12px 14px;
+    border-left: 4px solid var(--teal);
+    max-width: calc(100% - 32px);
+  }
+  .num {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--silver);
+  }
+  .num small { font-size: 18px; color: var(--teal); vertical-align: top; margin-right: 2px; }
+  h1 { margin: 6px 0 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-wrap: balance; }
+  .sub { margin-top: 2px; font-family: var(--font-data); font-size: 11px; color: var(--dim); letter-spacing: 0.1em; }
+
+  #spec {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: 16px;
+    width: 236px;
+    padding: 12px 16px;
+  }
+  #spec h2 { margin: 0 0 8px; font-family: var(--font-head); font-size: 13px; letter-spacing: 0.18em; color: var(--dim); }
+  #spec dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0; font-size: 12px; }
+  #spec dt { color: var(--dim); }
+  #spec dd { margin: 0; text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+  #spec p { margin: 10px 0 0; font-size: 11px; line-height: 1.6; color: var(--dim); }
+  #mode { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12px; }
+  #mode b { font-family: var(--font-data); color: var(--teal); }
+
+  .controls {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 10px;
+    padding: 10px 14px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+  }
+  .group { display: flex; gap: 6px; align-items: center; }
+  .group span { font-size: 11px; color: var(--dim); margin-right: 2px; letter-spacing: 0.08em; }
+  button {
+    font: inherit; font-size: 12px; color: var(--ink);
+    background: transparent; border: 1px solid var(--line); border-radius: 3px;
+    padding: 6px 10px; cursor: pointer;
+  }
+  button:hover { border-color: var(--teal); }
+  button[aria-pressed="true"] { border-color: var(--teal); color: var(--teal); }
+  button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+  @media (max-width: 640px) {
+    #spec { display: none; }
+    .num { font-size: 36px; }
+  }
+</style>
+
+<div id="stage"></div>
+
+<header class="panel">
+  <div class="num"><small>No.</small>12</div>
+  <h1>メルセデス W17 ・ アントネッリ</h1>
+  <div class="sub">2026 SEASON ・ 3D STUDIO MODEL</div>
+</header>
+
+<aside id="spec" class="panel">
+  <h2>2026 規定の主な数値</h2>
+  <dl>
+    <dt>ホイールベース</dt><dd>3,400 mm</dd>
+    <dt>全幅</dt><dd>1,900 mm</dd>
+    <dt>全長（上限）</dt><dd>5,000 mm</dd>
+    <dt>前トレッド</dt><dd>1,600 mm</dd>
+    <dt>後トレッド</dt><dd>1,520 mm</dd>
+    <dt>最低重量</dt><dd>768 kg</dd>
+  </dl>
+  <div id="mode">アクティブエアロ: <b id="modeName">Zモード（コーナー）</b></div>
+  <p>形状は規定の寸法をもとにした想像モデルです。実車の空力形状やカラーリングの細部は再現していません。</p>
+</aside>
+
+<div class="controls panel">
+  <div class="group"><span>エアロ</span>
+    <button id="aeroZ" type="button" aria-pressed="true">Z モード</button>
+    <button id="aeroX" type="button" aria-pressed="false">X モード</button>
+  </div>
+  <div class="group">
+    <button id="spin" type="button" aria-pressed="true">ターンテーブル</button>
+    <button id="wheels" type="button" aria-pressed="true">タイヤ回転</button>
+  </div>
+  <div class="group"><span>視点</span>
+    <button type="button" data-view="three">斜め</button>
+    <button type="button" data-view="side">横</button>
+    <button type="button" data-view="front">正面</button>
+    <button type="button" data-view="top">真上</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  // 単位はメートル。+z が車の前方、+y が上
+  const stage = document.getElementById("stage");
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  stage.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#0b0d10");
+  scene.fog = new THREE.Fog("#0b0d10", 18, 40);
+
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 100);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 2.2;
+  controls.maxDistance = 16;
+  controls.maxPolarAngle = Math.PI / 2 - 0.02;
+  controls.target.set(0, 0.45, 0);
+
+  // ---------- 照明（スタジオ風） ----------
+  scene.add(new THREE.HemisphereLight(0xdfe6ee, 0x1a1d22, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 1.4);
+  key.position.set(5, 8, 4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = key.shadow.camera.bottom = -4;
+  key.shadow.camera.right = key.shadow.camera.top = 4;
+  key.shadow.camera.near = 1; key.shadow.camera.far = 25;
+  key.shadow.bias = -0.0008;
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0x9fd8d6, 0.5);
+  fill.position.set(-6, 3, -2);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xffffff, 0.8);
+  rim.position.set(0, 4, -8);
+  scene.add(rim);
+  // 細長いソフトボックス風の反射用ライト
+
+  // ---------- 床 ----------
+  {
+    const c = document.createElement("canvas"); c.width = c.height = 1024;
+    const g = c.getContext("2d");
+    const gr = g.createRadialGradient(512, 512, 40, 512, 512, 512);
+    gr.addColorStop(0, "#2a2f36"); gr.addColorStop(0.55, "#15181d"); gr.addColorStop(1, "#0b0d10");
+    g.fillStyle = gr; g.fillRect(0, 0, 1024, 1024);
+    g.strokeStyle = "rgba(0,161,156,0.35)"; g.lineWidth = 3;
+    g.beginPath(); g.arc(512, 512, 300, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = "rgba(200,205,210,0.12)"; g.lineWidth = 1;
+    g.beginPath(); g.arc(512, 512, 330, 0, Math.PI * 2); g.stroke();
+    const tex = new THREE.CanvasTexture(c);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6, metalness: 0.1 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+  }
+
+  // ---------- マテリアル ----------
+  const M = {
+    silver: new THREE.MeshPhysicalMaterial({ color: 0xbfc3c8, metalness: 0.85, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.08 }),
+    black: new THREE.MeshPhysicalMaterial({ color: 0x0f1114, metalness: 0.4, roughness: 0.35, clearcoat: 0.9, clearcoatRoughness: 0.1 }),
+    teal: new THREE.MeshPhysicalMaterial({ color: 0x00a19c, metalness: 0.5, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1 }),
+    carbon: new THREE.MeshStandardMaterial({ color: 0x1c1f23, metalness: 0.3, roughness: 0.55 }),
+    tyre: new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.92, metalness: 0 }),
+    rim: new THREE.MeshStandardMaterial({ color: 0x8a8f96, metalness: 0.9, roughness: 0.3 }),
+    dark: new THREE.MeshStandardMaterial({ color: 0x07080a, roughness: 0.8 }),
+    visor: new THREE.MeshPhysicalMaterial({ color: 0x1b2a33, metalness: 0.6, roughness: 0.1, clearcoat: 1 }),
+  };
+
+  const car = new THREE.Group();
+  scene.add(car);
+  const add = (geo, mat, parent = car) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.castShadow = true; m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  };
+
+  // 断面（スーパー楕円）をつないで滑らかな胴体を作る
+  // section: { z, w: 半幅, h: 高さ, yc: 中心高さ, xc: 中心x, n: 角の丸さ(2=楕円, 大きいほど角張る) }
+  function loft(sections, segs = 40) {
+    const pos = [], idx = [];
+    sections.forEach((s) => {
+      const n = s.n || 2.6;
+      for (let i = 0; i < segs; i++) {
+        const t = (i / segs) * Math.PI * 2, c = Math.cos(t), si = Math.sin(t);
+        const x = Math.sign(c) * Math.pow(Math.abs(c), 2 / n) * s.w;
+        const y = Math.sign(si) * Math.pow(Math.abs(si), 2 / n) * (s.h / 2);
+        pos.push((s.xc || 0) + x, s.yc + y, s.z);
+      }
+    });
+    for (let j = 0; j < sections.length - 1; j++) {
+      for (let i = 0; i < segs; i++) {
+        const a = j * segs + i, b = j * segs + ((i + 1) % segs), c = a + segs, d = b + segs;
+        idx.push(a, c, b, b, c, d);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    geo.setIndex(idx);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  // ---------- モノコック＋ノーズ ----------
+  add(loft([
+    { z: 2.52, w: 0.01, h: 0.01, yc: 0.26 },
+    { z: 2.45, w: 0.07, h: 0.09, yc: 0.27 },
+    { z: 1.9, w: 0.13, h: 0.16, yc: 0.31 },
+    { z: 1.3, w: 0.22, h: 0.26, yc: 0.37 },
+    { z: 0.95, w: 0.30, h: 0.36, yc: 0.42, n: 3 },
+    { z: 0.55, w: 0.36, h: 0.46, yc: 0.47, n: 3.2 },
+    { z: 0.0, w: 0.38, h: 0.52, yc: 0.50, n: 3.4 },
+    { z: -0.6, w: 0.37, h: 0.50, yc: 0.48, n: 3.2 },
+    { z: -1.2, w: 0.27, h: 0.40, yc: 0.43, n: 3 },
+    { z: -1.75, w: 0.13, h: 0.22, yc: 0.40 },
+    { z: -1.95, w: 0.01, h: 0.01, yc: 0.40 },
+  ]), M.silver);
+
+  // ノーズ先端〜前輪あたりを黒に（前半黒・後半シルバーの塗り分け）
+  add(loft([
+    { z: 2.525, w: 0.012, h: 0.012, yc: 0.26 },
+    { z: 2.45, w: 0.075, h: 0.095, yc: 0.27 },
+    { z: 1.9, w: 0.135, h: 0.165, yc: 0.31 },
+    { z: 1.3, w: 0.225, h: 0.265, yc: 0.37 },
+    { z: 1.05, w: 0.27, h: 0.32, yc: 0.40, n: 3 },
+    { z: 1.0, w: 0.01, h: 0.01, yc: 0.40 },
+  ]), M.black);
+
+  // ---------- サイドポッド（左右） ----------
+  [1, -1].forEach((s) => {
+    add(loft([
+      { z: 0.52, w: 0.01, h: 0.01, yc: 0.36, xc: s * 0.62 },
+      { z: 0.5, w: 0.21, h: 0.22, yc: 0.36, xc: s * 0.62, n: 3.5 },
+      { z: 0.1, w: 0.29, h: 0.26, yc: 0.34, xc: s * 0.60, n: 3.2 },
+      { z: -0.5, w: 0.26, h: 0.21, yc: 0.30, xc: s * 0.54, n: 3 },
+      { z: -1.1, w: 0.14, h: 0.12, yc: 0.26, xc: s * 0.42 },
+      { z: -1.5, w: 0.01, h: 0.01, yc: 0.24, xc: s * 0.32 },
+    ]), M.black);
+    // インレット（黒い開口部）
+    const inlet = add(new THREE.BoxGeometry(0.34, 0.16, 0.02), M.dark);
+    inlet.position.set(s * 0.62, 0.37, 0.505);
+    // ティールのアクセントライン
+    const stripe = add(loft([
+      { z: 0.45, w: 0.215, h: 0.03, yc: 0.44, xc: s * 0.62, n: 3.5 },
+      { z: 0.1, w: 0.295, h: 0.03, yc: 0.43, xc: s * 0.60, n: 3.2 },
+      { z: -0.5, w: 0.265, h: 0.03, yc: 0.375, xc: s * 0.54, n: 3 },
+      { z: -1.05, w: 0.145, h: 0.03, yc: 0.30, xc: s * 0.42 },
+    ]), M.teal);
+    stripe.castShadow = false;
+  });
+
+  // ---------- フロア ----------
+  {
+    const shp = new THREE.Shape();
+    shp.moveTo(-0.95, -1.9); shp.lineTo(-0.95, 0.3); shp.quadraticCurveTo(-0.95, 0.95, -0.45, 0.95);
+    shp.lineTo(0.45, 0.95); shp.quadraticCurveTo(0.95, 0.95, 0.95, 0.3); shp.lineTo(0.95, -1.9); shp.lineTo(-0.95, -1.9);
+    const geo = new THREE.ExtrudeGeometry(shp, { depth: 0.035, bevelEnabled: false });
+    const fl = add(geo, M.carbon);
+    fl.rotation.x = -Math.PI / 2;    // XY 平面の形を XZ 平面へ
+    fl.position.y = 0.07;
+    // フロアエッジのティール
+    const edgeL = add(new THREE.BoxGeometry(0.03, 0.04, 2.2), M.teal), edgeR = add(new THREE.BoxGeometry(0.03, 0.04, 2.2), M.teal);
+    edgeL.position.set(-0.95, 0.085, -0.8); edgeR.position.set(0.95, 0.085, -0.8);
+    // ディフューザー
+    const dif = add(new THREE.BoxGeometry(1.0, 0.03, 0.5), M.carbon);
+    dif.position.set(0, 0.17, -2.0); dif.rotation.x = 0.35;
+  }
+
+  // ---------- エアボックス＋エンジンカバー＋フィン ----------
+  add(loft([
+    { z: -0.15, w: 0.01, h: 0.01, yc: 0.92 },
+    { z: -0.2, w: 0.17, h: 0.26, yc: 0.90, n: 3 },
+    { z: -0.6, w: 0.18, h: 0.30, yc: 0.82, n: 3 },
+    { z: -1.1, w: 0.14, h: 0.26, yc: 0.68 },
+    { z: -1.6, w: 0.08, h: 0.16, yc: 0.52 },
+    { z: -1.95, w: 0.01, h: 0.01, yc: 0.42 },
+  ]), M.silver);
+  const airIn = add(new THREE.BoxGeometry(0.28, 0.2, 0.02), M.dark);
+  airIn.position.set(0, 0.92, -0.17);
+  // シャークフィン（ゼッケンを貼る）
+  const finShape = new THREE.Shape();
+  finShape.moveTo(-0.45, 0); finShape.lineTo(-1.7, 0); finShape.lineTo(-1.7, 0.1); finShape.quadraticCurveTo(-1.0, 0.33, -0.45, 0.4); finShape.lineTo(-0.45, 0);
+  const fin = add(new THREE.ExtrudeGeometry(finShape, { depth: 0.012, bevelEnabled: false }), M.silver);
+  fin.rotation.y = -Math.PI / 2;   // 形の x を z に
+  fin.position.set(0.006, 0.66, 0);
+
+  // ---------- コクピット・ハロ・ドライバー ----------
+  const cockpit = add(new THREE.BoxGeometry(0.46, 0.08, 0.7), M.dark);
+  cockpit.position.set(0, 0.73, 0.25);
+  const headrest = add(new THREE.BoxGeometry(0.44, 0.14, 0.26), M.teal);
+  headrest.position.set(0, 0.79, -0.1);
+  {
+    // ハロ：楕円のチューブ＋前方中央の支柱
+    const pts = [];
+    for (let i = 0; i <= 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.sin(a) * 0.36, 0.98 + (Math.cos(a) > 0 ? 0 : -0.02), 0.25 + Math.cos(a) * 0.45));
+    }
+    const halo = add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, true), 96, 0.035, 12), M.carbon);
+    const pillar = add(new THREE.CylinderGeometry(0.03, 0.035, 0.42, 10), M.carbon);
+    pillar.position.set(0, 0.8, 0.72); pillar.rotation.x = -0.25;
+    [1, -1].forEach((s) => {
+      const leg = add(new THREE.CylinderGeometry(0.03, 0.035, 0.3, 10), M.carbon);
+      leg.position.set(s * 0.36, 0.86, -0.15);
+    });
+  }
+  const helmet = add(new THREE.SphereGeometry(0.14, 32, 20), M.teal);
+  helmet.position.set(0, 0.85, 0.1);
+  const visor = add(new THREE.SphereGeometry(0.142, 32, 20, 0, Math.PI * 2, 0.9, 0.7), M.visor);
+  visor.position.copy(helmet.position); visor.rotation.x = Math.PI / 2 - 0.1;
+  [1, -1].forEach((s) => {
+    const mirror = add(new THREE.BoxGeometry(0.14, 0.06, 0.05), M.carbon);
+    mirror.position.set(s * 0.55, 0.78, 0.55);
+    const arm = add(new THREE.BoxGeometry(0.02, 0.02, 0.18), M.carbon);
+    arm.position.set(s * 0.46, 0.76, 0.5); arm.rotation.y = s * 0.5;
+  });
+
+  // ---------- フロントウイング（アクティブ） ----------
+  const frontFlaps = [];
+  {
+    const main = add(new THREE.BoxGeometry(1.9, 0.02, 0.30), M.black);
+    main.position.set(0, 0.11, 2.3); main.rotation.x = 0.12;
+    const tealLip = add(new THREE.BoxGeometry(1.9, 0.015, 0.03), M.teal);
+    tealLip.position.set(0, 0.13, 2.45);
+    [[0.16, 2.17], [0.21, 2.06]].forEach(([y, z], i) => {
+      const pivot = new THREE.Group(); pivot.position.set(0, y, z); car.add(pivot);
+      const flap = add(new THREE.BoxGeometry(1.72, 0.015, 0.16), i ? M.silver : M.black, pivot);
+      flap.position.z = -0.08;
+      frontFlaps.push({ pivot, base: 0.35 + i * 0.1 });
+    });
+    [1, -1].forEach((s) => {
+      const ep = add(new THREE.BoxGeometry(0.02, 0.22, 0.5), M.black);
+      ep.position.set(s * 0.95, 0.19, 2.2);
+      const foot = add(new THREE.BoxGeometry(0.12, 0.015, 0.5), M.black);
+      foot.position.set(s * 0.9, 0.09, 2.2);
+    });
+    // ノーズとウイングをつなぐピロン
+    [1, -1].forEach((s) => {
+      const py = add(new THREE.BoxGeometry(0.03, 0.14, 0.2), M.black);
+      py.position.set(s * 0.06, 0.19, 2.3);
+    });
+  }
+
+  // ---------- リアウイング（3エレメント、ビームウイングなし） ----------
+  const rearFlaps = [];
+  {
+    const pylon = add(new THREE.BoxGeometry(0.05, 0.42, 0.12), M.carbon);
+    pylon.position.set(0, 0.62, -1.95);
+    const main = add(new THREE.BoxGeometry(1.0, 0.02, 0.30), M.silver);
+    main.position.set(0, 0.84, -2.1); main.rotation.x = -0.35;
+    [[0.93, -2.22], [1.0, -2.3]].forEach(([y, z], i) => {
+      const pivot = new THREE.Group(); pivot.position.set(0, y, z); car.add(pivot);
+      const flap = add(new THREE.BoxGeometry(0.98, 0.015, 0.15), i ? M.teal : M.silver, pivot);
+      flap.position.z = -0.07;
+      rearFlaps.push({ pivot, base: -0.55 - i * 0.2 });
+    });
+    [1, -1].forEach((s) => {
+      const ep = add(new THREE.BoxGeometry(0.02, 0.42, 0.55), M.black);
+      ep.position.set(s * 0.5, 0.9, -2.2);
+    });
+    // リアライト
+    const lamp = add(new THREE.BoxGeometry(0.06, 0.08, 0.04), new THREE.MeshStandardMaterial({ color: 0x330000, emissive: 0xff2020, emissiveIntensity: 1.2 }));
+    lamp.position.set(0, 0.46, -2.0);
+  }
+
+  // ---------- ホイール・サスペンション ----------
+  const wheels = [];
+  const WB = 3.4, R = 0.36;
+  const axles = [{ z: WB / 2, x: 0.8, w: 0.27 }, { z: -WB / 2, x: 0.76, w: 0.375 }];
+  axles.forEach(({ z, x, w }) => {
+    [1, -1].forEach((s) => {
+      const g = new THREE.Group();
+      g.position.set(s * x, R, z);
+      car.add(g);
+      const tyre = add(new THREE.CylinderGeometry(R, R, w, 48), M.tyre, g);
+      tyre.rotation.z = Math.PI / 2;
+      const rimM = add(new THREE.CylinderGeometry(0.23, 0.23, w + 0.01, 32), M.rim, g);
+      rimM.rotation.z = Math.PI / 2;
+      // ホイールカバー（平らな円板）
+      const cover = add(new THREE.CylinderGeometry(0.2, 0.2, w + 0.02, 32), M.carbon, g);
+      cover.rotation.z = Math.PI / 2;
+      // スポーク風の溝
+      for (let i = 0; i < 6; i++) {
+        const sp = add(new THREE.BoxGeometry(0.03, 0.34, w + 0.03), M.rim, g);
+        sp.rotation.x = (i / 6) * Math.PI;
+      }
+      wheels.push(g);
+      // ウィッシュボーン（上・下）とプッシュロッド
+      const inner = new THREE.Vector3(s * 0.34, 0, z), outer = new THREE.Vector3(s * (x - w / 2 - 0.02), 0, z);
+      [[0.52, 0.5], [0.22, 0.2]].forEach(([yi, yo]) => {
+        [0.18, -0.18].forEach((dz) => {
+          const a = inner.clone().setY(yi).add(new THREE.Vector3(0, 0, dz)), b = outer.clone().setY(yo);
+          const len = a.distanceTo(b);
+          const arm = add(new THREE.BoxGeometry(len, 0.02, 0.05), M.carbon);
+          arm.position.copy(a).lerp(b, 0.5);
+          arm.lookAt(b); arm.rotateY(Math.PI / 2);
+        });
+      });
+    });
+  });
+
+  // ---------- デカール（ゼッケン・名前） ----------
+  function textTexture(lines, w, h, opts = {}) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d");
+    g.textAlign = "center"; g.textBaseline = "middle";
+    lines.forEach((l) => {
+      g.font = l.font; g.fillStyle = l.color || "#ffffff";
+      g.fillText(l.text, w / 2 + (l.dx || 0), h / 2 + (l.dy || 0));
+    });
+    const t = new THREE.CanvasTexture(c);
+    t.anisotropy = 8;
+    if (opts.flip) { t.wrapS = THREE.RepeatWrapping; t.repeat.x = -1; }
+    return t;
+  }
+  const decal = (tex, w, h) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+    car.add(m); return m;
+  };
+  const numFont = "700 220px 'Barlow Condensed', 'Arial Narrow', sans-serif";
+  [1, -1].forEach((s) => {
+    // フィン両側のゼッケン 12 とドライバー名
+    const t = textTexture([
+      { text: "12", font: numFont, color: "#0f1114", dy: -20 },
+      { text: "ANTONELLI", font: "700 56px 'Barlow Condensed', sans-serif", color: "#00a19c", dy: 115 },
+    ], 512, 320, { flip: s < 0 });
+    const d = decal(t, 0.6, 0.375);
+    d.position.set(s * 0.014, 0.82, -1.0);
+    d.rotation.y = s * Math.PI / 2;
+  });
+  {
+    // ノーズ上面のゼッケン
+    const t = textTexture([{ text: "12", font: numFont, color: "#e9ecef" }], 512, 320);
+    const d = decal(t, 0.26, 0.16);
+    d.position.set(0, 0.405, 1.95); d.rotation.x = -Math.PI / 2 + 0.08;
+  }
+  [1, -1].forEach((s) => {
+    const t = textTexture([{ text: "W17", font: "700 120px 'Barlow Condensed', sans-serif", color: "#00a19c" }], 512, 160, { flip: s < 0 });
+    const d = decal(t, 0.38, 0.12);
+    d.position.set(s * 0.512, 0.9, -2.2); d.rotation.y = s * Math.PI / 2;
+  });
+
+  // ---------- 操作 ----------
+  const $ = (id) => document.getElementById(id);
+  let spinning = true, wheelsOn = true, xMode = false;
+  let aeroT = 0; // 0 = Z モード, 1 = X モード（なめらかに補間）
+
+  function setAero(x) {
+    xMode = x;
+    $("aeroZ").setAttribute("aria-pressed", String(!x));
+    $("aeroX").setAttribute("aria-pressed", String(x));
+    $("modeName").textContent = x ? "Xモード（ストレート・低ドラッグ）" : "Zモード（コーナー）";
+  }
+  $("aeroZ").addEventListener("click", () => setAero(false));
+  $("aeroX").addEventListener("click", () => setAero(true));
+  $("spin").addEventListener("click", (e) => { spinning = !spinning; e.currentTarget.setAttribute("aria-pressed", String(spinning)); });
+  $("wheels").addEventListener("click", (e) => { wheelsOn = !wheelsOn; e.currentTarget.setAttribute("aria-pressed", String(wheelsOn)); });
+
+  const VIEWS = {
+    three: [4.6, 1.9, 5.2],
+    side: [7.2, 0.9, 0.0],
+    front: [0.0, 1.0, 7.4],
+    top: [0.0, 8.5, 0.01],
+  };
+  let flyTo = null;
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
+    flyTo = new THREE.Vector3(...VIEWS[b.dataset.view]);
+    if (b.dataset.view !== "three") { spinning = false; $("spin").setAttribute("aria-pressed", "false"); car.rotation.y = 0; }
+  }));
+  camera.position.set(...VIEWS.three);
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduceMotion) { spinning = false; $("spin").setAttribute("aria-pressed", "false"); }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    if (spinning) car.rotation.y += dt * 0.25;
+    if (wheelsOn) wheels.forEach((w) => (w.rotation.x -= dt * 6));
+
+    const target = xMode ? 1 : 0;
+    aeroT += (target - aeroT) * Math.min(1, dt * 5);
+    frontFlaps.forEach((f) => (f.pivot.rotation.x = f.base * (1 - aeroT) + 0.05 * aeroT));
+    rearFlaps.forEach((f) => (f.pivot.rotation.x = f.base * (1 - aeroT) - 0.05 * aeroT));
+
+    if (flyTo) {
+      camera.position.lerp(flyTo, 0.08);
+      if (camera.position.distanceTo(flyTo) < 0.05) flyTo = null;
+    }
+    controls.update();
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
